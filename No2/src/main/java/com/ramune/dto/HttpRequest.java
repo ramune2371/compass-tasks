@@ -8,20 +8,32 @@ import java.util.Map;
 
 import javax.management.InvalidAttributeValueException;
 
+
+import com.ramune.util.ServerLogger;
+
 public class HttpRequest {
 
 	private Request request;
 	private Map<String,String> headers;
 	private String body;
 	
+	public static HttpRequest readRequest(BufferedReader reader) {
+		try {
+			return new HttpRequest(reader);
+		} catch (IOException | InvalidAttributeValueException e) {
+			ServerLogger.warn("Request読み取り時にエラー",e);
+			return null;
+		}
+	}
+	
 	/**
-	 * Constructor<br>
+	 * Private Constructor<br>
 	 * Read Http Request info
 	 * @param reader HttpRequest buffered reader
 	 * @throws IOException
 	 * @throws InvalidAttributeValueException
 	 */
-	public HttpRequest(BufferedReader reader) throws IOException, InvalidAttributeValueException {
+	private HttpRequest(BufferedReader reader) throws IOException, InvalidAttributeValueException {
 		this.headers = new HashMap<>();
 		String line = reader.readLine();
 		this.request = new Request(line);
