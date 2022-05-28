@@ -22,13 +22,6 @@ import com.ramune.util.HttpStatusEnum;
 import com.ramune.util.ServerLogger;
 
 public class ServerMain {
-	/**
-	 * 
-	 * @param args 0:port 1-:ignore
-	 * @throws IOException
-	 * @throws InvalidAttributeValueException
-	 * @throws InterruptedException
-	 */
 	public static void main(String[] args){
 		
 		int port = getPortFromArgs(args);
@@ -84,6 +77,7 @@ public class ServerMain {
 			return response;
 		}
 		
+		// /ping以外へアクセスされた時の処理
 		try(FileInputStream inputStream = new FileInputStream(new File(requestDirPath))){
 			String fileName = new File(requestDirPath).getName();
 			String extension = fileName.substring(fileName.lastIndexOf(".")+1);

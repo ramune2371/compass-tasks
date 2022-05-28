@@ -69,7 +69,7 @@ public class HttpRequest {
 		
 		/**
 		 * Constructor
-		 * @param req top of http request hedder
+		 * @param req top of http request header
 		 * @throws InvalidAttributeValueException at top of http request header length is not 3
 		 */
 		public Request(String req) throws InvalidAttributeValueException{
