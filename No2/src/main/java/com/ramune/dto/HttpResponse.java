@@ -8,7 +8,6 @@ import com.ramune.util.HttpStatusEnum;
 public class HttpResponse {
 
 	private final String CRLF = "\r\n";
-	private final String PONG = "pong";
 	private final String VERSION = "HTTP/1.1";
 	private final String CONTENT_HEADER = "Content-Type: ";
 	private final String CONTENT_LENGTH = "Content-Length: ";
@@ -18,12 +17,13 @@ public class HttpResponse {
 	private byte[] body;
 	
 	/**
+	 * Constructor<br>
 	 * set default response
 	 */
 	public HttpResponse() {
 		this.statusCode = "200";
 		this.status = "OK";
-		this.contentType = "text/html";
+		this.contentType = "text/plain";
 		this.body = "".getBytes(StandardCharsets.UTF_8);
 	}
 
@@ -52,6 +52,14 @@ public class HttpResponse {
 		this.contentType = contentType;
 	}
 	
+	public String getStatus() {return status;}
+	
+	public String getStatusCode() {return statusCode;}
+	
+	/**
+	 * Get bytes of all response data
+	 * @return all bytes of response
+	 */
 	public byte[] getResponse() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(this.VERSION).append(" ").append(this.statusCode).append(" ").append(this.status).append(CRLF);

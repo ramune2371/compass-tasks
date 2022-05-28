@@ -14,6 +14,13 @@ public class HttpRequest {
 	private Map<String,String> headers;
 	private String body;
 	
+	/**
+	 * Constructor<br>
+	 * Read Http Request info
+	 * @param reader HttpRequest buffered reader
+	 * @throws IOException
+	 * @throws InvalidAttributeValueException
+	 */
 	public HttpRequest(BufferedReader reader) throws IOException, InvalidAttributeValueException {
 		this.headers = new HashMap<>();
 		String line = reader.readLine();
@@ -35,6 +42,8 @@ public class HttpRequest {
 	public String getRequestPath() {return request.getPath();}
 	
 	public String getRequestVersion() {return request.getVersion();}
+	
+	public Map<String,String> getHeaders(){return headers;}
 
 	private void readBody(BufferedReader reader) throws IOException {
 		char[] bodyChar = new char[getContentLength()];
@@ -50,10 +59,19 @@ public class HttpRequest {
 		return 	Integer.parseInt(contentLength);
 	}
 	
+	/**
+	 * Store info of top of http request header 
+	 */
 	private class Request {
 		private String method;
 		private String path;
 		private String version;
+		
+		/**
+		 * Constructor
+		 * @param req top of http request hedder
+		 * @throws InvalidAttributeValueException at top of http request header length is not 3
+		 */
 		public Request(String req) throws InvalidAttributeValueException{
 			String[] reqs = req.split(" ");
 			if(reqs.length != 3) 

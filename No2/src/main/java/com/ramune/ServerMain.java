@@ -19,9 +19,7 @@ import com.ramune.dto.HttpRequest;
 import com.ramune.dto.HttpResponse;
 import com.ramune.util.ContentTypeEnum;
 import com.ramune.util.HttpStatusEnum;
-
-
-import jdk.jfr.ContentType;
+import com.ramune.util.ServerLogger;
 
 public class ServerMain {
 	/**
@@ -31,9 +29,11 @@ public class ServerMain {
 	 * @throws InvalidAttributeValueException
 	 * @throws InterruptedException
 	 */
-	public static void main(String[] args) throws IOException, InvalidAttributeValueException, InterruptedException{
+	public static void main(String[] args){
 		
-		int port = 18080;
+		int port = getPortFromArgs(args);
+		
+		ServerLogger.log("Server starting : port=" + port);
 		
 		while(true) {
 			try(
@@ -44,35 +44,40 @@ public class ServerMain {
 			){	
 				HttpRequest request = new HttpRequest(reader);
 	  		
-		  		System.out.println("-- Reqeust --");
-		  		System.out.println("request method : " + request.getRequestMethod());
-		  		System.out.println("request Path : " + request.getRequestPath());
-		  
-		  		System.out.println("-- body start --");
-		  		System.out.println(request.getBody());
-		  		System.out.println("-- body end --");
+				ServerLogger.log("Received Request");
+				ServerLogger.log(request.getRequestMethod() + " " + request.getRequestPath());
 		  		
-		  		HttpResponse response = handle(request);
-		  		//System.out.println(new String(response.getResponse()));
+		  		HttpResponse response = createResponse(request);
+		  		ServerLogger.log("Response " + response.getStatusCode() +" " + response.getStatus());
 		  		outputStream.write(response.getResponse());
 		  		outputStream.flush();
 			} catch (IOException | InvalidAttributeValueException e) {
-				throw e;
+				ServerLogger.warn(e.toString());
+				for(StackTraceElement element : e.getStackTrace()) {
+					ServerLogger.warn(element.toString());
+				}
+				break;
 			}
 		}
 	}
 	
-	private static HttpResponse handle(HttpRequest request) throws IOException {
+	/**
+	 * Create Http Response from Request
+	 * @param request Http Request
+	 * @return Http Response
+	 * @throws IOException
+	 */
+	private static HttpResponse createResponse(HttpRequest request) throws IOException {
 		String requestPath = request.getRequestPath();
 		String requestDirPath = System.getProperty("user.dir") + requestPath;
-		System.out.println("Request path : " + requestPath);
-		System.out.println("Request dir : " + requestDirPath);
+		ServerLogger.debug("Request dir : " + requestDirPath);
 		HttpResponse response = new HttpResponse();
 		if(!request.getRequestMethod().equals("GET")) {
 			response.setStatus(HttpStatusEnum.MethodNotAllowed);
 			return response;
 		}
 		
+		// /pingへアクセスされた時の処理
 		if(requestPath.equals("/ping")) {
 			response.setContentType("text/plain");
 			response.setBody("pong".getBytes(StandardCharsets.UTF_8));
@@ -85,7 +90,11 @@ public class ServerMain {
 			response.setContentType(ContentTypeEnum.valueOf(extension.toUpperCase()).getContentType());
 			response.setBody(inputStream.readAllBytes());			
 		}catch(FileNotFoundException e) {
-			e.printStackTrace();
+			ServerLogger.log("存在しないファイルへのリクエストのため404を返却します");
+			response.setStatus(HttpStatusEnum.NotFound);
+			return response;
+		}catch(IllegalArgumentException e) {
+			ServerLogger.log("許可されないファイル拡張子のため404を返却します");
 			response.setStatus(HttpStatusEnum.NotFound);
 			return response;
 		}
@@ -93,4 +102,30 @@ public class ServerMain {
 		return response;
 	}
 
+	/**
+	 * get port from runtime args
+	 * @param args
+	 * @return port(default 18080)
+	 */
+	private static int getPortFromArgs(String[] args) {
+		int port = 18080;
+		
+		try{
+			if(args.length == 0) {
+				ServerLogger.log("Port指定なし");
+				return port;
+			}else if(args.length > 0){
+				port = Integer.parseInt(args[0]);
+				ServerLogger.log("指定Portで起動します");
+				return port;
+			}else {
+				throw new NumberFormatException();
+			}
+		}catch(NumberFormatException e) {
+			ServerLogger.log("実行引数が不正です:" + args[0]);
+			ServerLogger.log("デフォルトポートで起動します");
+			return port;
+		}
+	}
+	
 }
