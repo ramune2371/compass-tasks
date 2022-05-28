@@ -1,3 +1,5 @@
 .classpath
 .java-version
 *.class
+No2/target/maven-archiver/*
+No2/target/maven-status/maven-compiler-plugin/*
